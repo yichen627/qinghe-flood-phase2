@@ -31,6 +31,19 @@ async function main(){
     await page.waitForFunction(()=>document.querySelector('#chart svg')!==null);
     await page.waitForFunction(()=>document.querySelector('#dc-value').textContent!=='—');
     const dc=await page.locator('#dc-value').innerText();assert(Number(dc)>=.85);
+    // 查看曲线只切换并定位图表，不能弹出JSON详情遮住曲线。
+    const curves=page.locator('#task-rows [data-task]');
+    if(await curves.count()>1){
+      const historical=await curves.nth(1).getAttribute('data-task');await curves.nth(1).click();
+      await page.waitForFunction(id=>document.querySelector('#task-rows tr.selected [data-task]')?.dataset.task===id,historical);
+      assert.equal(await page.locator('dialog[open]').count(),0);
+    }
+    await page.locator(`[data-task="${queued.id}"]`).click();
+    await page.waitForFunction(id=>document.querySelector('#task-rows tr.selected [data-task]')?.dataset.task===id,queued.id);
+    assert.equal(await page.locator('dialog[open]').count(),0);
+    await page.locator(`[data-task-details="${queued.id}"]`).click();
+    await page.locator('#detail-dialog').waitFor();assert.match(await page.locator('#detail-content').innerText(),/预报评价指标/);
+    await page.locator('#detail-dialog .close-dialog').click();
     await page.locator('#toast').waitFor({state:'hidden'});await page.screenshot({path:path.join(target,'workbench-desktop.png'),fullPage:true,animations:'disabled'});
     const title='浏览器验收产品 '+Date.now();
     await page.locator('#draft-button').click();await page.locator('#product-title').fill(title);await submitAction();
@@ -51,7 +64,7 @@ async function main(){
     await page.waitForFunction(()=>Number(document.querySelector('#chart svg')?.getAttribute('viewBox').split(' ')[2])<400);
     await page.locator('#toast').waitFor({state:'hidden'});await page.screenshot({path:path.join(target,'workbench-mobile.png'),fullPage:true,animations:'disabled'});
     assert.deepEqual(errors,[]);
-    const evidence={success:true,flows:['CSV与专属初态导入','真实起报与曲线','预报员禁止签发','值班长复核签发发布','方案活动状态','审计查询','调度与通知','390px无横向溢出'],forecast_id:queued.id,dc,console_errors:errors,product_title:title};
+    const evidence={success:true,flows:['CSV与专属初态导入','真实起报与曲线','查看曲线不弹出详情且切换至所选任务','独立任务详情显示可读指标','预报员禁止签发','值班长复核签发发布','方案活动状态','审计查询','调度与通知','390px无横向溢出'],forecast_id:queued.id,dc,console_errors:errors,product_title:title};
     await fs.writeFile(path.join(target,'acceptance.json'),JSON.stringify(evidence,null,2));console.log(JSON.stringify(evidence,null,2));
   }catch(error){await page.screenshot({path:path.join(target,'failure.png'),fullPage:true});throw error;}
   finally{await browser.close();}

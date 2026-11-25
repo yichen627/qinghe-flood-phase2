@@ -62,7 +62,7 @@ function renderTasks(){
   $('task-count').innerHTML=`${state.tasks.length}<small>场</small>`;$('task-total').textContent=`${tasks.length} 场`;
   const running=state.tasks.filter(t=>['RUNNING','QUEUED'].includes(t.status)).length;
   $('task-note').textContent=running?`${running} 场正在计算或排队`:'最近 100 条任务';
-  $('task-rows').innerHTML=tasks.map(t=>`<tr class="${state.selected?.id===t.id?'selected':''}"><td><strong>${esc(eventName(t.event_id))}</strong><small>${esc(t.id.slice(0,12))}</small></td><td>${esc(date(t.created_at))}</td><td>${badge(t.status)}</td><td>${fmt(t.metrics?.DC)}</td><td>${fmt(t.metrics?.RMSE,2)}</td><td><button class="text-button" data-task="${esc(t.id)}">查看${t.status==='SUCCEEDED'?'曲线':'详情'}</button></td></tr>`).join('') || emptyRow(6,'暂无预报任务，导入数据后即可起报');
+  $('task-rows').innerHTML=tasks.map(t=>`<tr class="${state.selected?.id===t.id?'selected':''}"><td><strong>${esc(eventName(t.event_id))}</strong><small>${esc(t.id.slice(0,12))}</small></td><td>${esc(date(t.created_at))}</td><td>${badge(t.status)}</td><td>${fmt(t.metrics?.DC)}</td><td>${fmt(t.metrics?.RMSE,2)}</td><td>${t.status==='SUCCEEDED'?`<button class="text-button" data-task="${esc(t.id)}">查看曲线</button>`:''}<button class="text-button" data-task-details="${esc(t.id)}">任务详情</button></td></tr>`).join('') || emptyRow(6,'暂无预报任务，导入数据后即可起报');
 }
 function renderEvents(){
   $('event-rows').innerHTML=state.events.map(e=>`<tr><td><strong>${esc(e.name)}</strong><small>${esc(date(e.created_at))}</small></td><td>${e.row_count}</td><td><span class="badge ${e.valid?'success':'danger'}">${e.valid?'可用于预报':'已阻断'}</span></td><td>${e.error_count}</td><td>${e.warning_count}</td><td><button class="text-button" data-event="${esc(e.id)}">质控明细</button><button class="text-button" data-use-event="${esc(e.id)}" ${!e.valid||!canWrite()?'disabled':''}>去起报 →</button></td></tr>`).join('') || emptyRow(6,'暂无导入数据');
@@ -171,7 +171,15 @@ $('new-schedule').onclick=()=>{
 $('action-form').addEventListener('submit',async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;$('action-error').textContent='';try{await actionSubmit();$('action-dialog').close();}catch(error){$('action-error').textContent=error.message;}finally{b.disabled=false;}});
 document.addEventListener('click',guarded(async event=>{
   const b=event.target.closest('button');if(!b||b.disabled)return;const d=b.dataset;
-  if(d.task){await selectTask(d.task);if(state.selected.status==='SUCCEEDED')showDetail('预报详情',`<p class="muted">${esc(state.selected.snapshot.event_name)} · ${esc(state.selected.id)}</p><div class="card-bottom"><button class="secondary" data-analysis="${esc(d.task)}">导出误差分析</button><button class="secondary" data-replay="${esc(d.task)}" ${!canWrite()?'disabled':''}>原快照回放</button></div><pre>${esc(JSON.stringify({指标:state.selected.metrics,原始状态:state.selected.snapshot.model_request.state0,参数摘要:state.selected.snapshot.params_sha256,模型版本:state.selected.snapshot.model_request.model_version,回放比较:state.selected.result?.replay_comparison},null,2))}</pre>`);}
+  if(d.task){
+    await selectTask(d.task);
+    document.querySelector('.hydrograph').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  if(d.taskDetails){
+    const task=await api('/forecasts/'+d.taskDetails),metrics=task.metrics || {};
+    const rows=[['确定性系数 DC',fmt(metrics.DC,6)],['均方根误差 RMSE',fmt(metrics.RMSE,3)+' m³/s'],['洪峰相对误差',fmt(metrics.peak_relative_error_pct,3)+' %'],['峰现时间误差',fmt(metrics.peak_time_error_h,1)+' h'],['有效实测时段',metrics.observed_count ?? '—']];
+    showDetail('任务详情',`<p class="muted">${esc(task.snapshot.event_name)} · ${esc(date(task.created_at))} ${badge(task.status)}</p>${task.error?`<p class="error-text">${esc(task.error)}</p>`:''}${task.status==='SUCCEEDED'?`<div class="card-bottom"><button class="secondary" data-analysis="${esc(task.id)}">导出误差分析</button><button class="secondary" data-replay="${esc(task.id)}" ${!canWrite()?'disabled':''}>原快照回放</button></div><h3>预报评价指标</h3><table><tbody>${rows.map(([key,value])=>`<tr><td>${esc(key)}</td><td>${esc(value)}</td></tr>`).join('')}</tbody></table>`:''}<h3>该场初始状态</h3><table><tbody>${Object.entries(task.snapshot.model_request.state0).map(([key,value])=>`<tr><td>${esc(key)}</td><td>${esc(value)}</td></tr>`).join('')}</tbody></table><details style="margin-top:20px"><summary>查看版本与快照信息</summary><pre>${esc(JSON.stringify({任务编号:task.id,参数摘要:task.snapshot.params_sha256,模型版本:task.snapshot.model_request.model_version,回放比较:task.result?.replay_comparison},null,2))}</pre></details>`);
+  }
   if(d.event)await eventDetail(d.event);
   if(d.useEvent){$('event-select').value=d.useEvent;await setView('forecast');}
   if(d.json)showJson('操作详情',JSON.parse(d.json));
