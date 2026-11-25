@@ -9,7 +9,7 @@
 | GET /events | limit、offset | 事件摘要列表 | 401 |
 | GET /events/{id} | ID | 元数据、质控问题、规范化记录 | 404 |
 | GET /schemes | 无 | 内置只读冻结方案 | 401 |
-| POST /forecasts | event_id、scheme_id | 202，QUEUED任务ID | 404事件/方案不存在，409数据不合格 |
+| POST /forecasts | event_id、scheme_id | 202，QUEUED任务ID | 404事件不存在，422未知方案，409数据不合格 |
 | GET /forecasts | limit、offset | 状态、时间、指标和错误摘要 | 401 |
 | GET /forecasts/{id} | ID | 任务快照和结果 | 404 |
 | GET /forecasts/{id}/plot.png | ID | image/png | 404、409未成功 |

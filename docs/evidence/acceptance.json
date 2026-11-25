@@ -1,0 +1,69 @@
+{
+  "runs": [
+    {
+      "event": "event1",
+      "task_id": "1330d8fa9aa04d3e899a40629b7692ae",
+      "status": "SUCCEEDED",
+      "wall_seconds": 0.5466929799999889,
+      "max_Q_difference": 0.0,
+      "metrics": {
+        "DC": 0.9958105568678262,
+        "RMSE": 4.860151903391171,
+        "observed_count": 40,
+        "peak_relative_error_pct": -2.479320408932669,
+        "peak_time_error_h": 0.0
+      },
+      "params_sha256": "ed06ce63e886466e33c6a96f017dedbd17710b9a9420c389f7aca09255f2f89a",
+      "model_version": "5338470cd2af252b9bee71aeb51c8375b1cd608b6573357237b07534ee757878"
+    },
+    {
+      "event": "event2",
+      "task_id": "d7523fce782a49a4bae5c062c26e20e1",
+      "status": "SUCCEEDED",
+      "wall_seconds": 0.5447173120000457,
+      "max_Q_difference": 0.0,
+      "metrics": {
+        "DC": 0.993834408000184,
+        "RMSE": 17.910468970090488,
+        "observed_count": 40,
+        "peak_relative_error_pct": 4.1298404793188785,
+        "peak_time_error_h": 0.0
+      },
+      "params_sha256": "ed06ce63e886466e33c6a96f017dedbd17710b9a9420c389f7aca09255f2f89a",
+      "model_version": "5338470cd2af252b9bee71aeb51c8375b1cd608b6573357237b07534ee757878"
+    },
+    {
+      "event": "event3",
+      "task_id": "efcb5bfe255d49faaa078ea169c2291c",
+      "status": "SUCCEEDED",
+      "wall_seconds": 1.0509693199999788,
+      "max_Q_difference": 0.0,
+      "metrics": {
+        "DC": 0.9950237825179893,
+        "RMSE": 12.93678235340785,
+        "observed_count": 40,
+        "peak_relative_error_pct": 0.3654237542239019,
+        "peak_time_error_h": 0.0
+      },
+      "params_sha256": "ed06ce63e886466e33c6a96f017dedbd17710b9a9420c389f7aca09255f2f89a",
+      "model_version": "5338470cd2af252b9bee71aeb51c8375b1cd608b6573357237b07534ee757878"
+    },
+    {
+      "event": "event4",
+      "task_id": "ef6b7c06933b4023980f9a66103adda9",
+      "status": "SUCCEEDED",
+      "wall_seconds": 0.5435755950000498,
+      "max_Q_difference": 0.0,
+      "metrics": {
+        "DC": 0.9940468917549392,
+        "RMSE": 8.782904965906217,
+        "observed_count": 40,
+        "peak_relative_error_pct": -0.5974308129558694,
+        "peak_time_error_h": 0.0
+      },
+      "params_sha256": "ed06ce63e886466e33c6a96f017dedbd17710b9a9420c389f7aca09255f2f89a",
+      "model_version": "5338470cd2af252b9bee71aeb51c8375b1cd608b6573357237b07534ee757878"
+    }
+  ],
+  "bad_data_blocked": true
+}

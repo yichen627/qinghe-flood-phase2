@@ -1,0 +1,47 @@
+name: qinghe-phase2
+x-common: &common
+  build: .
+  image: qinghe-phase2:stage2
+  restart: unless-stopped
+  init: true
+  environment: &env
+    DATABASE_PATH: /var/qinghe/system.db
+    API_KEY: ${API_KEY:-qinghe-local-demo}
+    MODEL_API_KEY: ${MODEL_API_KEY:-qinghe-model-demo}
+    MODEL_URL: http://model:8001
+services:
+  model:
+    <<: *common
+    command: ["uvicorn", "app.model_api:app", "--host", "0.0.0.0", "--port", "8001"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health',timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 10
+      start_period: 10s
+  api:
+    <<: *common
+    ports: ["127.0.0.1:${API_PORT:-8000}:8000"]
+    volumes: ["qinghe-data:/var/qinghe"]
+    depends_on:
+      model: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health',timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 10
+      start_period: 10s
+  worker:
+    <<: *common
+    command: ["python", "-m", "app.worker"]
+    volumes: ["qinghe-data:/var/qinghe"]
+    depends_on:
+      api: {condition: service_healthy}
+      model: {condition: service_healthy}
+  test:
+    <<: *common
+    profiles: ["test"]
+    restart: "no"
+    command: ["python", "-m", "pytest", "-q", "--junitxml=/tmp/junit.xml"]
+volumes:
+  qinghe-data:
