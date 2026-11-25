@@ -1,0 +1,15 @@
+{
+  "basin_area_km2": 2000,
+  "dt_hours": 6,
+  "unit_conversion": 92.6,
+  "timezone": "Asia/Shanghai",
+  "rainfall_warning_tolerance_mm": 0.011,
+  "station_weights": {"青岭": 0.22, "石林": 0.18, "溪口": 0.15, "龙潭": 0.17, "白沙": 0.13, "梅溪": 0.15},
+  "max_csv_bytes": 1048576,
+  "max_event_rows": 2000,
+  "model_timeout_seconds": 30,
+  "worker_poll_seconds": 1,
+  "task_lease_seconds": 120,
+  "forecast_acceptance_seconds": 180,
+  "validation_dc_min": 0.85
+}
