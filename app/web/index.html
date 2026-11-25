@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>青河 · 洪水预报工作台</title><link rel="stylesheet" href="/assets/style.css"><script src="/assets/app.js" defer></script></head>
+<body>
+<aside class="sidebar">
+  <a class="brand" href="/"><span class="brand-symbol">≈</span><span>青河水文<small>QINGHE HYDROLOGY</small></span></a>
+  <div class="workspace-label">洪水预报系统 <span>二期</span></div>
+  <nav aria-label="业务导航">
+    <button data-view="forecast" class="active"><span>◈</span>预报工作台</button>
+    <button data-view="events"><span>▤</span>数据与质控</button>
+    <button data-view="products"><span>▣</span>产品签发</button>
+    <button data-view="schemes"><span>⚙</span>模型与方案</button>
+    <button data-view="operations"><span>◷</span>调度与通知</button>
+    <button data-view="audit"><span>≡</span>操作审计</button>
+  </nav>
+  <div class="sidebar-bottom"><div class="basin-mark">青河流域 <span>QH</span></div><p>流域面积 2,000 km²<br>预报步长 6 h · 三水源新安江模型</p><button id="account-button" class="account"><span class="avatar">陈</span><span>本机教学环境<small id="role-label">尚未连接</small></span><span>↗</span></button></div>
+</aside>
+<div class="shell">
+<header class="topbar"><span class="breadcrumb">业务中心 <span>/</span> <strong id="breadcrumb">预报工作台</strong></span><div class="top-tools"><span id="connection" class="connection">等待连接</span><span class="divider"></span><time id="clock"></time><button id="refresh" class="icon-button" aria-label="刷新数据">↻</button></div></header>
+<main>
+  <div class="page-heading"><div><div class="eyebrow">QINGHE FLOOD FORECAST</div><h1 id="page-title">预报工作台</h1><p id="page-description">从流域来水到预报签发，让每一次决策都有依据。</p></div><button class="primary" id="import-button">＋ 导入洪水数据</button></div>
+  <div id="error-banner" class="banner" role="alert" hidden></div>
+  <section id="view-forecast" class="view">
+    <div class="metric-grid">
+      <article class="metric"><div class="metric-icon blue">≋</div><div><span>当前模拟洪峰</span><strong id="peak-value">—<small>m³/s</small></strong><p id="peak-time">选择一场成功预报查看</p></div></article>
+      <article class="metric"><div class="metric-icon teal">◉</div><div><span>确定性系数 DC</span><strong id="dc-value">—</strong><p id="dc-note">检验目标 ≥ 0.85</p></div></article>
+      <article class="metric"><div class="metric-icon amber">⌁</div><div><span>均方根误差 RMSE</span><strong id="rmse-value">—<small>m³/s</small></strong><p>基于有效实测时段计算</p></div></article>
+      <article class="metric"><div class="metric-icon purple">▥</div><div><span>已加载预报任务</span><strong id="task-count">0<small>场</small></strong><p id="task-note">最近 100 条任务</p></div></article>
+    </div>
+    <div class="forecast-layout"><div class="forecast-main">
+      <section class="card hydrograph"><div class="card-heading"><div><h2>洪水过程线 <span class="tag">6 h</span></h2><p id="chart-description">选择历史任务，或在右侧创建预报</p></div><div class="legend"><span><i class="observed"></i>实测流量</span><span><i class="simulated"></i>模拟流量</span><button id="download-plot" class="text-button" disabled>下载图片 ↓</button></div></div><div id="chart" class="chart-area"><div class="empty"><span>⌁</span><strong>等待预报结果</strong><p>导入洪水数据并起报，即可查看实测与模拟过程线</p></div></div><div id="chart-tooltip" class="chart-tooltip" hidden></div><div class="chart-footer"><span><i class="tiny-dot"></i>模型结果来自独立计算服务</span><span id="chart-range">逐场独立初态 · 冻结参数可追溯</span></div></section>
+      <section class="card task-card"><div class="card-heading"><div><h2>预报任务</h2><p>查看计算状态与历史结果</p></div><div class="filters"><select id="task-filter" aria-label="筛选任务"><option value="">全部状态</option><option value="SUCCEEDED">计算完成</option><option value="QUEUED">排队中</option><option value="RUNNING">计算中</option><option value="FAILED">失败</option></select><span id="task-total" class="muted"></span></div></div><div class="table-scroll"><table><thead><tr><th>洪水场次 / 任务</th><th>创建时间</th><th>状态</th><th>DC</th><th>RMSE</th><th>操作</th></tr></thead><tbody id="task-rows"></tbody></table></div></section>
+    </div><div class="forecast-side">
+      <section class="card run-card"><div class="card-heading"><div><h2>发起预报</h2><p>选择输入数据与计算方案</p></div><span class="step-badge">01</span></div><form id="forecast-form"><label>洪水数据 <span>必选</span><select id="event-select" required><option value="">请选择已通过质控的数据</option></select></label><div id="event-hint" class="field-hint">每场洪水使用各自独立的初始状态</div><label>预报方案<select id="scheme-select"><option value="">当前活动方案 · 自动路由</option></select></label><div class="model-note"><span class="tiny-dot"></span><strong>三水源新安江模型</strong><p>蓄满产流 · 三水源划分 · 汇流计算</p></div><button type="submit" class="primary full" id="run-button">▷ 开始预报</button><p class="form-note">任务和输入快照将自动保存</p></form></section>
+      <section class="card state-card"><div class="card-heading"><h2>运行状态</h2><span id="runtime-summary" class="badge neutral">待检查</span></div><div id="runtime-rows"></div><div class="runtime-foot">自动巡检 60 秒 / 次</div></section>
+      <section class="tip-card"><span>◈</span><div><strong>预报之后，记得复核</strong><p>成功预报可生成产品草稿，经值班长复核、签发后发布。</p><button id="draft-button" class="text-button" disabled>生成产品草稿 →</button></div></section>
+    </div></div>
+  </section>
+  <section id="view-events" class="view" hidden><div class="card"><div class="card-heading"><div><h2>数据与质量控制</h2><p>错误数据保留归档，禁止起报；面雨量告警可查看明细</p></div><span class="tag">最近 100 条</span></div><div class="table-scroll"><table><thead><tr><th>洪水场次</th><th>时段数</th><th>质控状态</th><th>错误</th><th>告警</th><th>操作</th></tr></thead><tbody id="event-rows"></tbody></table></div></div></section>
+  <section id="view-products" class="view" hidden><div class="workflow-strip"><span>01 草稿</span><b>→</b><span>02 复核</span><b>→</b><span>03 签发</span><b>→</b><span>04 发布</span><small>复核、签发和发布需使用值班长身份</small></div><div class="card"><div class="card-heading"><div><h2>预报产品</h2><p>未签发产品不可发布，完整操作链自动留痕</p></div></div><div class="table-scroll"><table><thead><tr><th>产品</th><th>创建时间</th><th>状态</th><th>操作</th></tr></thead><tbody id="product-rows"></tbody></table></div></div></section>
+  <section id="view-schemes" class="view" hidden><div class="card"><div class="card-heading"><div><h2>预报方案</h2><p id="routing-description">方案绑定不可变参数版本，切换只影响未来任务</p></div><button class="secondary admin-action" id="new-scheme">＋ 新增方案</button></div><div class="table-scroll"><table><thead><tr><th>方案名称</th><th>参数版本</th><th>状态</th><th>操作</th></tr></thead><tbody id="scheme-rows"></tbody></table></div><div class="card-bottom"><button class="secondary admin-action" id="rollback">回滚上一活动方案</button><span class="muted">仅支持当前服务已部署的模型版本</span></div></div></section>
+  <section id="view-operations" class="view" hidden><div class="card"><div class="card-heading"><div><h2>定时起报</h2><p>计划持久化保存，服务重启后继续调度</p></div><button class="secondary admin-action" id="new-schedule">＋ 创建计划</button></div><div class="table-scroll"><table><thead><tr><th>计划名称</th><th>起报间隔</th><th>下次起报</th><th>状态</th><th>操作</th></tr></thead><tbody id="schedule-rows"></tbody></table></div></div><div class="two-columns"><div class="card"><div class="card-heading"><div><h2>质控告警</h2><p>同一异常自动去重，可确认处理</p></div></div><div id="alert-list" class="record-list"></div></div><div class="card"><div class="card-heading"><div><h2>值班收件箱</h2><p>本地通知，未接入外部消息通道</p></div></div><div id="inbox-list" class="record-list"></div></div></div></section>
+  <section id="view-audit" class="view" hidden><div class="card"><div class="card-heading"><div><h2>操作审计</h2><p>按时间查看最新 100 条操作，历史记录只追加</p></div></div><div class="table-scroll"><table><thead><tr><th>时间</th><th>操作者</th><th>操作</th><th>对象</th><th>详情</th></tr></thead><tbody id="audit-rows"></tbody></table></div></div></section>
+  <footer class="page-footer"><span>青河流域洪水预报系统 · 个人课程项目</span><span>陈一 · 河海大学 <a href="/docs" target="_blank" rel="noopener">接口文档 ↗</a></span></footer>
+</main></div>
+<dialog id="auth-dialog"><form id="auth-form"><div class="dialog-heading"><div><span class="eyebrow">WORKSPACE ACCESS</span><h2>连接预报工作台</h2></div><button type="button" class="icon-button close-dialog" aria-label="关闭">×</button></div><p class="muted">输入当前环境的角色密钥，服务端将验证操作权限。</p><label>角色密钥<input id="key-input" type="password" autocomplete="off" required placeholder="请输入密钥"></label><div class="demo-roles"><span>本机演示身份</span><button type="button" data-demo="forecaster">预报员</button><button type="button" data-demo="reviewer">值班长</button><button type="button" data-demo="admin">管理员</button></div><p class="field-hint">自定义密钥请手动输入。密钥仅保留于当前页面内存，刷新后重新连接。</p><p id="auth-error" class="error-text" role="alert"></p><button class="primary full" type="submit">连接工作台 →</button></form></dialog>
+<dialog id="import-dialog"><form id="import-form"><div class="dialog-heading"><div><span class="eyebrow">DATA INGESTION</span><h2>导入洪水数据</h2></div><button type="button" class="icon-button close-dialog" aria-label="关闭">×</button></div><label>快速加载课程样本<select id="sample-select"><option value="">选择样本，自动加载该场CSV与专属初态</option><option>event1</option><option>event2</option><option>event3</option><option>event4</option></select></label><div class="two-columns"><label>场次名称<input id="import-name" required maxlength="100" placeholder="例如 2023年青河洪水"></label><label>上传 CSV<input id="csv-file" type="file" accept=".csv,text/csv"></label></div><label>CSV内容<textarea id="csv-input" rows="5" required placeholder="时间、六站雨量、面雨量P(mm)、蒸发皿EM(mm)、Q_obs(m3/s)"></textarea></label><label>该场初始状态 JSON<textarea id="state-input" rows="3" required placeholder='{"WU": ..., "WL": ..., "WD": ..., "S": ..., "QI": ..., "QG": ...}'></textarea></label><p class="field-hint">外部数据需填写自己的初态。严禁四场共用初态；错误数据会留档并阻断起报。</p><button class="primary full" type="submit">入库并执行质控</button></form></dialog>
+<dialog id="detail-dialog"><div class="dialog-heading"><h2 id="detail-title">详细信息</h2><button class="icon-button close-dialog" aria-label="关闭">×</button></div><div id="detail-content"></div></dialog>
+<dialog id="action-dialog"><form id="action-form"><div class="dialog-heading"><h2 id="action-title"></h2><button type="button" class="icon-button close-dialog" aria-label="关闭">×</button></div><div id="action-fields"></div><p id="action-error" class="error-text" role="alert"></p><button type="submit" class="primary full">确认提交</button></form></dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+</body></html>

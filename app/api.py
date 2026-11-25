@@ -124,6 +124,8 @@ def create_app(settings=None,repository=None):
 
     from .governance_api import register_routes
     register_routes(app,repo,settings,require_key)
+    from .workbench import register_workbench
+    register_workbench(app,require_key)
     return app
 
 

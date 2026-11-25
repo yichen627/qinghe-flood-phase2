@@ -8,3 +8,4 @@ artifacts/
 .deps/
 delivery/
 ~$*.docx
+node_modules/

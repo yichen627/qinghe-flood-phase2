@@ -1,5 +1,7 @@
 # 二期最终测试与部署验收报告
 
+版本1.1.0已补充真正的Web预报工作台，接口回归共35项通过，并完成真实浏览器验收。最新工作台证据见[WORKBENCH.md](WORKBENCH.md)及evidence/workbench目录。下文保留1.0.0基线部署、物理计算与恢复验收记录。
+
 作者陈一，日期2026年11月25日。应用1.0.0，Python3.12，Docker Desktop Linux，依赖requirements.lock，数据库schema2。算法与冻结参数沿用一期，不重新率定event4。
 
 ## 自动化测试

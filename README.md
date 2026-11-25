@@ -2,7 +2,7 @@
 
 陈一 · 河海大学计算机与软件学院 · 软件工程24级1班 · 2406050103 · 个人完成。
 
-版本1.0.0实现M1–M5及UC1–UC5的本地教学流程：六站CSV入库与质控、独立模型HTTP服务、持久化预报、结果/指标与PNG、参数版本和方案管理、复核签发发布、快照回放、操作审计、定时起报、自动质控与本地值班通知。最终验收、运维文档和个人总结报告随工程交付。API文档页是操作入口，不是选做的Web工作台。
+版本1.1.0实现M1–M5及UC1–UC5的本地教学流程：六站CSV入库与质控、独立模型HTTP服务、持久化预报、结果/指标与PNG、参数版本和方案管理、复核签发发布、快照回放、操作审计、定时起报、自动质控与本地值班通知。最终验收、运维文档和个人总结报告随工程交付。已提供本地预报工作台，首页为业务操作入口；/docs保留接口调试功能。
 
 ## 一条命令启动
 
@@ -14,7 +14,7 @@ cd qinghe-flood-phase2
 docker compose up -d --build --wait api worker
 ```
 
-打开 http://localhost:8000/docs 。`x-api-key`按角色填写：预报员`qinghe-local-demo`、值班长`qinghe-reviewer-demo`、管理员`qinghe-admin-demo`。模型使用独立MODEL_API_KEY，只在容器网络8001端口提供服务。API仅绑定127.0.0.1。内置密钥适合个人本机教学；可复制`.env.example`为`.env`更换四类密钥，不能设置为相同值。
+打开 http://localhost:8000/ 。`x-api-key`按角色填写：预报员`qinghe-local-demo`、值班长`qinghe-reviewer-demo`、管理员`qinghe-admin-demo`。模型使用独立MODEL_API_KEY，只在容器网络8001端口提供服务。API仅绑定127.0.0.1。内置密钥适合个人本机教学；可复制`.env.example`为`.env`更换四类密钥，不能设置为相同值。
 
 ## 一键演示与验收
 
@@ -30,6 +30,8 @@ docker compose run --rm --no-deps test
 现有api、model、worker、scheduler四个容器，原启动命令通过依赖自动拉起scheduler。持久卷中的schema1自动迁移至schema2，不清空旧记录。停止用`docker compose down`，不要为重启删除卷。升级与备份见docs/OPERATIONS_STAGE34.md。
 
 ## 手动使用
+
+推荐直接在[预报工作台](http://localhost:8000/)完成导入、起报、查看曲线与产品签发；详细操作见[工作台说明](docs/WORKBENCH.md)。左下角切换角色，首次连接可以选择演示身份。界面与API共享同一数据库和权限。
 
 1. POST `/events`，JSON提供name、csv_text和该场state0。CSV列见data/events，初态见data/golden中对应文件的state0。不可用同一初态替代四场。
 2. 查询返回的valid及issues。ERROR数据保留入库但不允许起报；WARNING使用泰森复算值继续，观测Q可缺失。

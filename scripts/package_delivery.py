@@ -27,7 +27,8 @@ def main():
     bundle = target / 'qinghe-history.bundle'
     subprocess.run(['git', '-C', str(ROOT), 'bundle', 'create', str(bundle), '--all'], check=True)
     subprocess.run(['git', '-C', str(ROOT), 'bundle', 'verify', str(bundle)], check=True)
-    manifest = {'version': '1.0.0', 'commit': commit, 'branch': branch,
+    from_version = (ROOT/'app'/'__init__.py').read_text(encoding='utf-8').split("__version__ = '")[1].split("'")[0]
+    manifest = {'version': from_version, 'commit': commit, 'branch': branch,
                 'files': {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in paths}}
     for name, chosen in [('qinghe-phase2-source.zip', paths),
                          ('qinghe-phase2-documents.zip', [p for p in paths if p.startswith(('docs/', 'reports/')) or p=='README.md'])]:

@@ -1,6 +1,6 @@
 # 青河洪水预报系统运行维护手册
 
-适用版本1.0.0，单机Docker Desktop Linux容器。入口仅绑定127.0.0.1，默认API端口8000。模型8001仅在Compose网络内开放。
+适用版本1.1.0，单机Docker Desktop Linux容器。入口仅绑定127.0.0.1，默认API端口8000。模型8001仅在Compose网络内开放。
 
 ## 首次部署
 
@@ -11,7 +11,7 @@ docker compose up -d --build --wait api worker
 docker compose ps
 ```
 
-worker的依赖会自动启动model、api、scheduler。访问 http://localhost:8000/docs 。镜像固定Python基础镜像摘要，requirements.lock锁定全部Python依赖；首次构建需要联网下载。API_PORT环境变量可更改宿主端口。不要用python -O关闭水量平衡断言。
+worker的依赖会自动启动model、api、scheduler。访问 http://localhost:8000/ 。镜像固定Python基础镜像摘要，requirements.lock锁定全部Python依赖；首次构建需要联网下载。API_PORT环境变量可更改宿主端口。不要用python -O关闭水量平衡断言。
 
 ## 配置与角色
 

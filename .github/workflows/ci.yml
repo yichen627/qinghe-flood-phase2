@@ -21,6 +21,14 @@ jobs:
           docker compose restart scheduler worker
           docker compose exec -T api python scripts/final_probe.py verify-restart
           docker compose cp api:/app/artifacts ./docker-artifacts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Workbench browser acceptance
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          npm run test:browser
       - uses: actions/upload-artifact@v4
         if: always()
         with:

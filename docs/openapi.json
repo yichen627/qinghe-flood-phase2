@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Qinghe flood forecast system",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "paths": {
     "/health": {
@@ -2085,6 +2085,93 @@
         "description": "查看worker与scheduler心跳及滞后，判断自动任务是否在运行。",
         "operationId": "runtime_runtime_get",
         "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workbench/session": {
+      "get": {
+        "summary": "Session",
+        "description": "由服务端确认角色，避免前端自行声明权限。",
+        "operationId": "session_workbench_session_get",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workbench/examples/{name}": {
+      "get": {
+        "summary": "Example",
+        "description": "仅允许四场既有课程数据和各自初态，不读取任意客户端路径。",
+        "operationId": "example_workbench_examples__name__get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
           {
             "name": "x-api-key",
             "in": "header",
