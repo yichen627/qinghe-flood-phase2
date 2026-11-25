@@ -2,9 +2,9 @@
   "runs": [
     {
       "event": "event1",
-      "task_id": "1330d8fa9aa04d3e899a40629b7692ae",
+      "task_id": "f16d645d5a6a46aa9349fccf8cfae872",
       "status": "SUCCEEDED",
-      "wall_seconds": 0.5466929799999889,
+      "wall_seconds": 1.049366278999969,
       "max_Q_difference": 0.0,
       "metrics": {
         "DC": 0.9958105568678262,
@@ -18,9 +18,9 @@
     },
     {
       "event": "event2",
-      "task_id": "d7523fce782a49a4bae5c062c26e20e1",
+      "task_id": "8ed5361579084ffcbb17100065ff1d5a",
       "status": "SUCCEEDED",
-      "wall_seconds": 0.5447173120000457,
+      "wall_seconds": 0.5434328729998015,
       "max_Q_difference": 0.0,
       "metrics": {
         "DC": 0.993834408000184,
@@ -34,9 +34,9 @@
     },
     {
       "event": "event3",
-      "task_id": "efcb5bfe255d49faaa078ea169c2291c",
+      "task_id": "26487bc9687148d8bb1e5a86e52fe820",
       "status": "SUCCEEDED",
-      "wall_seconds": 1.0509693199999788,
+      "wall_seconds": 1.0698239759999524,
       "max_Q_difference": 0.0,
       "metrics": {
         "DC": 0.9950237825179893,
@@ -50,9 +50,9 @@
     },
     {
       "event": "event4",
-      "task_id": "ef6b7c06933b4023980f9a66103adda9",
+      "task_id": "46ee46fef2bf4c528f2afe0fd59bd279",
       "status": "SUCCEEDED",
-      "wall_seconds": 0.5435755950000498,
+      "wall_seconds": 0.5445388969997111,
       "max_Q_difference": 0.0,
       "metrics": {
         "DC": 0.9940468917549392,

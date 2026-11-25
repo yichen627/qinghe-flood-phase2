@@ -184,3 +184,22 @@ def test_nonfinite_input_and_partial_observation(system):
     result = system[0].get('/forecasts/'+identifier,headers=headers(system)).json()
     assert result['metrics']['observed_count']==39
     assert result['metrics']['peak_time_error_h'] is None
+
+
+@pytest.mark.parametrize('malformation',['unclosed_quote','extra_column','large_field'])
+def test_malformed_csv_archived_without_server_error(system,malformation):
+    """最终异常门禁：畸形CSV必须存档并阻断，不返回500。"""
+    body = event_body()
+    lines = body['csv_text'].splitlines()
+    if malformation=='unclosed_quote':
+        lines[1]='"'+lines[1]
+    elif malformation=='extra_column':
+        lines[1]+=',unexpected'
+    else:
+        cells = lines[1].split(',')
+        cells[1]='1'*140000
+        lines[1]=','.join(cells)
+    body['csv_text']='\n'.join(lines)
+    record = ingest(system,body)
+    assert not record['valid'] and record['error_count']>0
+    assert system[0].post('/forecasts',json={'event_id':record['id']},headers=headers(system)).status_code==409

@@ -1,0 +1,20 @@
+{
+  "kind": "bounded 12-task burst, not a general load SLA",
+  "tasks": 12,
+  "task_ids": [
+    "3364158d329a4f539cceb35fbf6c6379",
+    "1f029fb849da433c9a01e3272d68b4d9",
+    "e7e4162a756b43db80994bed789de4b8",
+    "19240e1b2aa34f2d8b827bf64f594d63",
+    "1df6e507d7a44decadbd3f7cb3c44463",
+    "9d8724d73d284fa89a9742fa3cb15ef1",
+    "ee8fb44ec93648ae8bd4d49cb3fbc937",
+    "18268bc6a6394768a299ebca8d043f16",
+    "9d7b3f8186a94c97bc2fc1e516130f18",
+    "069eca2d2a0c442bae82fa8dc5654d51",
+    "af8133e893a04c70b05f1d2a6762e43a",
+    "f51bd88f136f48aab1f6f31b2609b226"
+  ],
+  "elapsed_seconds": 2.067809999000019,
+  "max_Q_difference": 0.0
+}

@@ -9,6 +9,7 @@ from .repository import Repository
 from .settings import Settings,model_version
 from . import services
 from .governance_store import StoreConflict
+from . import __version__
 
 
 def create_app(settings=None,repository=None):
@@ -23,7 +24,7 @@ def create_app(settings=None,repository=None):
         repo.seed(settings,model_version())
         yield
 
-    app = FastAPI(title='Qinghe flood forecast system stages 1-4',version='0.4.0',lifespan=lifespan)
+    app = FastAPI(title='Qinghe flood forecast system',version=__version__,lifespan=lifespan)
 
     @app.exception_handler(services.BusinessError)
     async def business_error(request,exc):
@@ -58,7 +59,7 @@ def create_app(settings=None,repository=None):
         try:
             with repo.connect() as db:
                 db.execute('SELECT COUNT(*) FROM forecasts').fetchone()
-            return {'status':'ok','schema_version':2}
+            return {'status':'ok','schema_version':2,'application_version':__version__}
         except Exception as exc:
             raise HTTPException(503,'Database unavailable') from exc
 

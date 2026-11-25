@@ -1,14 +1,16 @@
-# 青河流域洪水预报系统 二期阶段一至四
+# 青河流域洪水预报系统 二期
 
 陈一 · 河海大学计算机与软件学院 · 软件工程24级1班 · 2406050103 · 个人完成。
 
-目前完成阶段1–4：六站CSV入库与即时质控、独立模型HTTP服务、持久化预报、结果/指标与PNG、参数版本和方案管理、复核签发发布、快照回放、操作审计、定时起报、自动质控与本地值班通知。尚未宣称阶段5–6整体部署验收和正式报告包全部完成。API文档页是操作入口，不是选做的Web工作台。
+版本1.0.0实现M1–M5及UC1–UC5的本地教学流程：六站CSV入库与质控、独立模型HTTP服务、持久化预报、结果/指标与PNG、参数版本和方案管理、复核签发发布、快照回放、操作审计、定时起报、自动质控与本地值班通知。最终验收、运维文档和个人总结报告随工程交付。API文档页是操作入口，不是选做的Web工作台。
 
 ## 一条命令启动
 
-安装并启动Docker Desktop（Linux容器），克隆后进入仓库根目录：
+安装并启动Docker Desktop（Linux容器），克隆最终交付分支后进入仓库根目录：
 
 ```powershell
+git clone --branch codex/final-delivery git@github.com:yichen627/qinghe-flood-phase2.git
+cd qinghe-flood-phase2
 docker compose up -d --build --wait api worker
 ```
 
@@ -87,7 +89,7 @@ python -m app.scheduler
 
 模型绘图使用matplotlib无界面后端，无需显示器。模型所有每步水量平衡断言保留，不得使用`python -O`。数据库默认var/system.db。没有重新率定，event4在一期已经开封，仅用于固定回归而非新盲测。
 
-API契约以requirements.txt锁定环境为准；使用本机其他FastAPI/Pydantic版本可能生成不同JSON。不要用未锁定版本导出的文档覆盖契约。推荐直接在容器运行测试。
+依赖通过requirements.lock锁定，requirements.txt引用同一约束。使用本机其他FastAPI/Pydantic版本可能生成不同JSON。不要用未锁定版本导出的文档覆盖契约。推荐直接在容器运行测试。Docker基础镜像也固定摘要。
 
 ## 故障排查与当前限制
 
@@ -95,4 +97,20 @@ API契约以requirements.txt锁定环境为准；使用本机其他FastAPI/Pydan
 
 数据库为单机SQLite WAL，HTTP调用不持有写事务。演示使用三类角色密钥做操作授权，不是多用户登录平台，不提供密码找回或SSO。当前只支持一个已部署算法，注册其他镜像元信息不会自动下载部署；历史算法需要先重新部署才可回放。通知采用事务出站队列、退避重试、死信和本地值班收件箱；未连接外部群聊/邮件。
 
-参数及阈值来自config；schema版本2。升级保留旧数据与快照，不补造升级前操作记录。测试及运行证据见docs/TEST_REPORT_STAGE34.md，后续正式总结报告仍待阶段6整理。
+参数及阈值来自config；schema版本2。升级保留旧数据与快照，不补造升级前操作记录。
+
+## 最终验收与提交
+
+- [最终验收清单](docs/FINAL_ACCEPTANCE.md)：M1–M5及UC1–UC5对应实现和检查。
+- [完整演示](docs/DEMO.md)：四场回归、方案与产品流程、12任务批量及真实进程重启。
+- [运维手册](docs/OPERATIONS.md)：配置、备份、独立卷恢复和故障处理。
+- [最终测试报告](docs/FINAL_TEST_REPORT.md)：实际测量与证据，包括远程CI。
+- reports/：陈一个人二期总结报告Word与PDF，黑体小标题，无参考文献章节。
+
+生成本地提交包（需要Git，代码提交后运行）：
+
+```powershell
+python scripts/package_delivery.py
+```
+
+delivery目录生成工程ZIP、文档ZIP、Git历史bundle和SHA256清单。工程ZIP不含数据库、.env、缓存；恢复完整历史用git clone qinghe-history.bundle。打包前提交修改，脚本会拒绝含未提交修改的版本。

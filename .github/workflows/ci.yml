@@ -1,4 +1,4 @@
-name: stages-1-4-quality
+name: final-quality-gates
 on: [push, pull_request]
 jobs:
   tests:
@@ -16,11 +16,15 @@ jobs:
           docker compose up -d --build --wait api worker
           docker compose exec -T api python scripts/demo.py
           docker compose exec -T api python scripts/demo_workflows.py
+          docker compose exec -T api python scripts/final_probe.py burst
+          docker compose exec -T api python scripts/final_probe.py prepare-restart
+          docker compose restart scheduler worker
+          docker compose exec -T api python scripts/final_probe.py verify-restart
           docker compose cp api:/app/artifacts ./docker-artifacts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: stages-1-4-test-evidence
+          name: final-test-evidence
           path: |
             artifacts/
             docker-artifacts/

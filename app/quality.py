@@ -31,21 +31,36 @@ def inspect_csv(text,rules):
 
     if len(text.encode('utf-8')) > rules['max_csv_bytes']:
         raise ValueError('CSV超过配置的大小上限')
-    reader = csv.DictReader(io.StringIO(text.lstrip('\ufeff')))
+    reader = csv.DictReader(io.StringIO(text.lstrip('\ufeff')),strict=True)
+    try:
+        fieldnames = reader.fieldnames or []
+    except csv.Error as exc:
+        issue('ERROR','CSV_PARSE',1,'CSV',str(exc))
+        return rows,issues
     station_columns = {f'P_{key}(mm)':value for key,value in rules['station_weights'].items()}
     mandatory = ['时间',*station_columns,'面雨量P(mm)','蒸发皿EM(mm)']
     for key in mandatory:
-        if key not in (reader.fieldnames or []):
+        if key not in fieldnames:
             issue('ERROR','MISSING_COLUMN',1,key,'缺少必要列')
     if any(i['code']=='MISSING_COLUMN' for i in issues):
         return rows,issues
-    if len(reader.fieldnames) != len(set(reader.fieldnames)):
+    if len(fieldnames) != len(set(fieldnames)):
         issue('ERROR','DUPLICATE_COLUMN',1,'header','重复列名')
     previous = None
-    for line,row in enumerate(reader,2):
+    def records():
+        """解析失败作为质控错误保留，避免畸形CSV导致HTTP500。"""
+        try:
+            for row in reader:
+                yield reader.line_num,row
+        except csv.Error as exc:
+            issue('ERROR','CSV_PARSE',reader.line_num,'CSV',str(exc))
+
+    for line,row in records():
         if len(rows) >= rules['max_event_rows']:
             issue('ERROR','TOO_MANY_ROWS',line,'CSV','行数超过配置限制')
             break
+        if None in row or any(value is None for value in row.values()):
+            issue('ERROR','ROW_WIDTH',line,'CSV','行字段数与表头不一致')
         try:
             moment = datetime.fromisoformat(row['时间'])
             if moment.tzinfo is None:

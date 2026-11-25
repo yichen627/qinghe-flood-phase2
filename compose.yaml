@@ -1,7 +1,7 @@
 name: qinghe-phase2
 x-common: &common
   build: .
-  image: qinghe-phase2:stage34
+  image: qinghe-phase2:final
   restart: unless-stopped
   init: true
   environment: &env

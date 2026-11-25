@@ -1,0 +1,33 @@
+{
+  "schedule_id": "5a26221dbd634923ace7d092e818e511",
+  "control_task_id": "61475a5f5b964a64bf43636a80488b44",
+  "snapshot_sha256": "89fe8b256971c9f46ac8ba4101602cf20e1c92508dd6951ebbd48b40c617b0b0",
+  "prepared_at": "2026-11-25T06:02:59.515709+00:00",
+  "scheduled_for": "2026-11-25T06:03:14.456672+00:00",
+  "recovered_task_id": "79820b122b224045a0e9cf8d82334608",
+  "schedule_run_count": 1,
+  "snapshot_preserved": true,
+  "Q_identical": true,
+  "runtime": {
+    "worker": {
+      "id": "worker",
+      "created_at": "2026-11-25T06:03:15.520835+00:00",
+      "detail": {
+        "status": "ok",
+        "worked": false
+      },
+      "stale": false
+    },
+    "scheduler": {
+      "id": "scheduler",
+      "created_at": "2026-11-25T06:03:14.777528+00:00",
+      "detail": {
+        "notification_count": 0,
+        "scheduled_count": 1,
+        "status": "ok"
+      },
+      "stale": false
+    }
+  },
+  "verified_at": "2026-11-25T06:03:15.567060+00:00"
+}
