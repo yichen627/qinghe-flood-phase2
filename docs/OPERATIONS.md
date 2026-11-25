@@ -60,9 +60,11 @@ docker compose cp api:/var/qinghe/manual-backup.db ./manual-backup.db
 
 ```powershell
 $env:API_PORT='18001'
-docker compose -p qinghe-restore run --rm --no-deps -v "${PWD}:/backup:ro" api python -c "import pathlib,sqlite3; p=pathlib.Path('/var/qinghe/system.db'); assert not p.exists(), 'Destination already exists'; a=sqlite3.connect('file:/backup/manual-backup.db?mode=ro',uri=True); assert a.execute('PRAGMA integrity_check').fetchone()[0]=='ok'; b=sqlite3.connect(p); a.backup(b); print(b.execute('PRAGMA integrity_check').fetchone()[0]); b.close(); a.close()"
+docker compose -p qinghe-restore run --rm --no-deps -v "${PWD}:/backup:ro" api python -c "import pathlib,sqlite3; p=pathlib.Path('/var/qinghe/system.db'); assert not p.exists(), 'Destination already exists'; a=sqlite3.connect('file:/backup/manual-backup.db?mode=ro&immutable=1',uri=True); assert a.execute('PRAGMA integrity_check').fetchone()[0]=='ok'; b=sqlite3.connect(p); a.backup(b); print(b.execute('PRAGMA integrity_check').fetchone()[0]); b.close(); a.close()"
 docker compose -p qinghe-restore up -d --wait api worker
 ```
+
+immutable=1仅用于backup API产出的、当前无人写入的独立备份，使WAL格式备份可在只读目录打开；不能对活动数据库使用。脚本scripts/verify_restore.py可进一步核对全部表行数、外键和任务快照摘要。
 
 在 http://localhost:18001/docs 查询原任务、快照、产品和审计，确认后停止恢复项目并恢复端口变量：
 

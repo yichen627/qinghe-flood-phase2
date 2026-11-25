@@ -1,0 +1,59 @@
+{
+  "started_at": "2026-11-25T06:20:16.928179+00:00",
+  "preserved_stage2_task_ids": [],
+  "new_forecast": {
+    "id": "890e53fdc39c4c70bc0b20db2e1c9a7f",
+    "scheme_id": "7faddba2fc134f38b79aec87bb6073de",
+    "seconds": 1.019515021999723
+  },
+  "replay": {
+    "max_abs_q_difference": 0.0,
+    "original_task_id": "890e53fdc39c4c70bc0b20db2e1c9a7f",
+    "within_tolerance": true
+  },
+  "product": {
+    "id": "809c8e75236742789895b82c9cb18d29",
+    "public_status": "PUBLISHED",
+    "inbox_id": "6eb4fa744ae64e5b90a2c3118e42f2df"
+  },
+  "schedule": {
+    "id": "53065568ec0e4dcb86d9946f29c53d26",
+    "forecast_id": "cd66fd5b0f304c47a48479767c8706ed",
+    "trigger_seconds": 1.008596456000305
+  },
+  "automatic_qc": {
+    "event_id": "ad66aa62b8fb47778303c9f32d58e034",
+    "alert_id": "ee8b15783946430b874c06019cc87f11",
+    "inbox_id": "f2d57a37cc7e4da7a08f280c9a360626",
+    "seconds": 39.36241476300074,
+    "manual_scan_called": false
+  },
+  "runtime": {
+    "scheduler": {
+      "id": "scheduler",
+      "created_at": "2026-11-25T06:21:01.014098+00:00",
+      "detail": {
+        "notification_count": 2,
+        "quality_scan_id": "1b939e16e2794701922a8cc7aca25bda",
+        "scheduled_count": 0,
+        "status": "ok"
+      },
+      "stale": false
+    },
+    "worker": {
+      "id": "worker",
+      "created_at": "2026-11-25T06:21:00.871044+00:00",
+      "detail": {
+        "status": "ok",
+        "worked": false
+      },
+      "stale": false
+    }
+  },
+  "product_audit_actions": [
+    "product.publish",
+    "product.sign",
+    "product.review",
+    "product.drafted"
+  ]
+}

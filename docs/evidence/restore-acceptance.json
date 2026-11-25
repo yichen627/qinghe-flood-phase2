@@ -1,0 +1,24 @@
+{
+  "integrity": "ok",
+  "foreign_keys": "ok",
+  "inventory_equal": true,
+  "table_counts": {
+    "alerts": 3,
+    "audit_log": 153,
+    "events": 11,
+    "forecasts": 25,
+    "inbox": 4,
+    "model_versions": 1,
+    "notification_outbox": 4,
+    "parameter_sets": 2,
+    "products": 1,
+    "qc_scans": 56,
+    "qc_status": 11,
+    "runtime_status": 2,
+    "schedule_runs": 2,
+    "schedules": 2,
+    "schemes": 2,
+    "system_state": 1
+  },
+  "snapshots_sha256": "8ef4e0a3b9287a02584b0644c6ac8d82f8c9b36d51937428ea5e444df196f9fc"
+}
