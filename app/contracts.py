@@ -16,9 +16,61 @@ class EventCreate(StrictInput):
 
 
 class ForecastCreate(StrictInput):
-    """显式选择事件和只读冻结方案。"""
+    """选择事件和方案；不指定方案时按当前激活及灰度规则选择。"""
     event_id: str
-    scheme_id: Literal['phase1-frozen-v1'] = 'phase1-frozen-v1'
+    scheme_id: str|None = None
+
+
+class ParameterCreate(StrictInput):
+    """每次创建新不可变参数版本，不覆盖既有记录。"""
+    name: str = Field(min_length=1,max_length=100)
+    params: dict[str,Any]
+
+
+class ModelCreate(StrictInput):
+    """注册模型部署元信息，不接受上传并执行任意源代码。"""
+    name: str = Field(min_length=1,max_length=100)
+    version: str = Field(pattern=r'^[0-9a-f]{64}$')
+    image_ref: str = Field(min_length=1,max_length=300)
+
+
+class SchemeCreate(StrictInput):
+    """方案绑定不可变参数版本与已登记模型版本。"""
+    name: str = Field(min_length=1,max_length=100)
+    parameter_id: str
+    model_version: str
+
+
+class RolloutCreate(StrictInput):
+    """事件指纹稳定分桶，只影响未来未显式选择方案的任务。"""
+    scheme_id: str
+    percentage: int = Field(ge=0,le=100)
+
+
+class ProductCreate(StrictInput):
+    """仅从成功预报创建不可变产品草稿。"""
+    forecast_id: str
+    title: str = Field(min_length=1,max_length=200)
+
+
+class ReviewCreate(StrictInput):
+    """值班长复核意见。"""
+    note: str = Field(min_length=1,max_length=2000)
+
+
+class ScheduleCreate(StrictInput):
+    """持久化间隔任务，可绑定固定方案或在触发时选择激活方案。"""
+    name: str = Field(min_length=1,max_length=100)
+    event_id: str
+    scheme_id: str|None = None
+    interval_seconds: int = Field(ge=1,le=31536000)
+    next_run_at: str|None = None
+    enabled: bool = True
+
+
+class ScheduleToggle(StrictInput):
+    """停用保留历史，不删除已有任务。"""
+    enabled: bool
 
 
 class ModelInput(StrictInput):

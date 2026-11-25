@@ -19,7 +19,7 @@ def create_app(settings=None):
     @app.post('/simulate')
     def run(body:SimulationRequest,x_api_key:str=Header(default='')):
         """执行纯函数模型；版本、物理边界及每步水量平衡均校验。"""
-        if not secrets.compare_digest(x_api_key,settings.model_key):
+        if not secrets.compare_digest(x_api_key.encode(),settings.model_key.encode()):
             raise HTTPException(401,'Invalid model API key')
         if body.model_version != model_version():
             raise HTTPException(409,'Model source version mismatch')

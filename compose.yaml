@@ -1,12 +1,14 @@
 name: qinghe-phase2
 x-common: &common
   build: .
-  image: qinghe-phase2:stage2
+  image: qinghe-phase2:stage34
   restart: unless-stopped
   init: true
   environment: &env
     DATABASE_PATH: /var/qinghe/system.db
     API_KEY: ${API_KEY:-qinghe-local-demo}
+    ADMIN_API_KEY: ${ADMIN_API_KEY:-qinghe-admin-demo}
+    REVIEWER_API_KEY: ${REVIEWER_API_KEY:-qinghe-reviewer-demo}
     MODEL_API_KEY: ${MODEL_API_KEY:-qinghe-model-demo}
     MODEL_URL: http://model:8001
 services:
@@ -38,6 +40,26 @@ services:
     depends_on:
       api: {condition: service_healthy}
       model: {condition: service_healthy}
+      scheduler: {condition: service_healthy}
+    stop_grace_period: 40s
+    healthcheck:
+      test: ["CMD", "python", "-m", "app.runtime_check", "worker"]
+      interval: 10s
+      timeout: 4s
+      retries: 5
+      start_period: 10s
+  scheduler:
+    <<: *common
+    command: ["python", "-m", "app.scheduler"]
+    volumes: ["qinghe-data:/var/qinghe"]
+    depends_on:
+      api: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-m", "app.runtime_check", "scheduler"]
+      interval: 10s
+      timeout: 4s
+      retries: 5
+      start_period: 10s
   test:
     <<: *common
     profiles: ["test"]

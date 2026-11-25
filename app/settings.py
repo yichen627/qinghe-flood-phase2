@@ -34,6 +34,8 @@ class Settings:
     rules: dict
     params: dict
     params_hash: str
+    reviewer_key: str = 'qinghe-reviewer-demo'
+    admin_key: str = 'qinghe-admin-demo'
 
     @classmethod
     def load(cls):
@@ -49,7 +51,26 @@ class Settings:
         weights = rules['station_weights']
         if len(weights) != 6 or any(v < 0 for v in weights.values()) or abs(sum(weights.values())-1)>1e-9:
             raise ValueError('六站泰森权重非法')
-        return cls(os.getenv('DATABASE_PATH',str(ROOT/'var'/'system.db')),
+        instance = cls(os.getenv('DATABASE_PATH',str(ROOT/'var'/'system.db')),
                    os.getenv('MODEL_URL','http://127.0.0.1:8001'),
                    os.getenv('API_KEY','qinghe-local-demo'),
-                   os.getenv('MODEL_API_KEY','qinghe-model-demo'),rules,frozen['params'],actual)
+                   os.getenv('MODEL_API_KEY','qinghe-model-demo'),rules,frozen['params'],actual,
+                   os.getenv('REVIEWER_API_KEY','qinghe-reviewer-demo'),
+                   os.getenv('ADMIN_API_KEY','qinghe-admin-demo'))
+        if len({instance.api_key,instance.admin_key,instance.reviewer_key,instance.model_key}) != 4:
+            raise ValueError('四类密钥必须不同，避免角色越权')
+        positive = ('model_timeout_seconds','worker_poll_seconds','task_lease_seconds','scheduler_poll_seconds',
+                    'qc_interval_seconds','schedule_min_interval_seconds','schedule_batch_size',
+                    'notification_batch_size','notification_max_attempts','notification_retry_seconds',
+                    'runtime_stale_seconds')
+        if any(not isinstance(rules[k],(int,float)) or rules[k]<=0 for k in positive):
+            raise ValueError('调度、租约、批量和重试配置必须为正数')
+        if rules['qc_alert_severity'] not in ('ERROR','WARNING'):
+            raise ValueError('质控告警级别只能为ERROR或WARNING')
+        if rules['task_lease_seconds']<=rules['model_timeout_seconds']+rules['worker_poll_seconds']:
+            raise ValueError('任务租约必须大于单次HTTP超时及轮询时间')
+        if rules['runtime_stale_seconds']<=rules['model_timeout_seconds']:
+            raise ValueError('心跳有效期必须大于模型HTTP超时')
+        if rules['qc_interval_seconds']+rules['scheduler_poll_seconds']>300:
+            raise ValueError('自动质控周期不得超过UC5的5分钟目标')
+        return instance

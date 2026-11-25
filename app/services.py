@@ -27,14 +27,14 @@ def validate_state(state,params):
             raise BusinessError(422,f'初始{key}超过{cap}')
 
 
-def import_event(repo,settings,body):
+def import_event(repo,settings,body,actor='system'):
     """质控结果与原始CSV一起保存，包括不可用于计算的坏数据。"""
     validate_state(body.state0,settings.params)
     if len(body.csv_text.encode('utf-8')) > settings.rules['max_csv_bytes']:
         raise BusinessError(413,'CSV超过配置大小上限')
     rows,issues = inspect_csv(body.csv_text,settings.rules)
     fingerprint = digest({'csv':body.csv_text,'state0':body.state0,'rules':settings.rules})
-    row,duplicate = repo.insert_event(fingerprint,body.name,body.csv_text,rows,issues,body.state0)
+    row,duplicate = repo.insert_event(fingerprint,body.name,body.csv_text,rows,issues,body.state0,actor)
     return {**event_summary(row),'issues':json.loads(row['issues_json']),'duplicate':duplicate}
 
 
@@ -54,20 +54,37 @@ def task_summary(row):
         'metrics':result['metrics'] if result else None}
 
 
-def queue_forecast(repo,settings,body):
-    """只使用合格事件，创建完整不可变输入快照。"""
-    row = repo.get('events',body.event_id)
+def build_snapshot(repo,settings,event_id,scheme_id=None):
+    """解析当前方案并构建快照，供手动与定时起报共同使用。"""
+    row = repo.get('events',event_id)
     if row is None:
         raise BusinessError(404,'Event not found')
     if not row['valid']:
         raise BusinessError(409,'事件存在ERROR质控问题，禁止起报')
+    latest = repo.get('qc_status',event_id)
+    if latest and any(i['severity']=='ERROR' for i in json.loads(latest['issues_json'])):
+        raise BusinessError(409,'最近自动巡检有ERROR，禁止起报')
+    scheme = repo.resolve_scheme(row['fingerprint'],scheme_id)
+    if not scheme:
+        raise BusinessError(404,'方案不存在或已归档')
+    if scheme['model_version'] != model_version():
+        raise BusinessError(409,'当前模型服务未部署该方案模型版本')
+    params = json.loads(scheme['params_json'])
     rows,state = json.loads(row['rows_json']),json.loads(row['state0_json'])
+    validate_state(state,params)
     request = {'inputs':[{'P':r['P'],'EM':r['EM']} for r in rows],
-               'params':settings.params,'state0':state,'model_version':model_version()}
+               'params':params,'state0':state,'model_version':scheme['model_version']}
     snapshot = {'model_request':request,'event_rows':rows,'event_name':row['name'],
-                'params_sha256':settings.params_hash,'event_fingerprint':row['fingerprint'],
-                'request_sha256':digest(request),'source':'phase1-frozen-v1'}
-    return task_summary(repo.queue(row['id'],body.scheme_id,snapshot))
+                'params_sha256':scheme['sha256'],'event_fingerprint':row['fingerprint'],
+                'request_sha256':digest(request),'source':scheme['id'],
+                'parameter_id':scheme['parameter_id'],'quality_rules':settings.rules}
+    return snapshot
+
+
+def queue_forecast(repo,settings,body,actor='system'):
+    """为当前选定方案提交不可变快照，后续切换不影响此任务。"""
+    snapshot = build_snapshot(repo,settings,body.event_id,body.scheme_id)
+    return task_summary(repo.queue(body.event_id,snapshot['source'],snapshot,actor))
 
 
 def run_one(repo,settings,client):
@@ -104,6 +121,14 @@ def run_one(repo,settings,client):
                 metrics['peak_time_error_h'] = calc_peak_time_error(observed,simulated,settings.rules['dt_hours'])
         result = {'simulation':simulation,'metrics':metrics,
                   'elapsed_seconds':time.monotonic()-started}
+        if snapshot.get('replay_of'):
+            original = repo.get('forecasts',snapshot['replay_of'])
+            if original and original['result_json']:
+                original_q = np.asarray(json.loads(original['result_json'])['simulation']['Q'])
+                difference = float(np.max(np.abs(original_q-q))) if original_q.shape==q.shape else None
+                result['replay_comparison'] = {
+                    'original_task_id':original['id'],'max_abs_q_difference':difference,
+                    'within_tolerance':difference is not None and difference<=settings.rules['replay_tolerance_m3s']}
         repo.finish(task['id'],result=result)
     except Exception as exc:
         # 错误摘要不包含API密钥及完整HTTP请求；保留任务供诊断和显式重算。

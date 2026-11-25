@@ -8,6 +8,7 @@ from .contracts import EventCreate,ForecastCreate,EventSummary,ForecastSummary
 from .repository import Repository
 from .settings import Settings,model_version
 from . import services
+from .governance_store import StoreConflict
 
 
 def create_app(settings=None,repository=None):
@@ -19,19 +20,30 @@ def create_app(settings=None,repository=None):
     async def lifespan(app):
         """启动时幂等创建持久化schema。"""
         repo.initialize()
+        repo.seed(settings,model_version())
         yield
 
-    app = FastAPI(title='Qinghe flood forecast system stage 1-2',version='0.2.0',lifespan=lifespan)
+    app = FastAPI(title='Qinghe flood forecast system stages 1-4',version='0.4.0',lifespan=lifespan)
 
     @app.exception_handler(services.BusinessError)
     async def business_error(request,exc):
         """业务错误不伪装为成功HTTP200。"""
         return JSONResponse(status_code=exc.status,content={'detail':exc.detail})
 
-    def require_key(key):
-        """本地教学访问密钥；正式角色权限计划后续实现。"""
-        if not secrets.compare_digest(key,settings.api_key):
-            raise HTTPException(401,'Invalid API key')
+    @app.exception_handler(StoreConflict)
+    async def store_conflict(request,exc):
+        """状态竞争与非法迁移返回409，不伪装成系统错误。"""
+        return JSONResponse(status_code=409,content={'detail':str(exc)})
+
+    def require_key(key,roles=('forecaster','reviewer','admin')):
+        """从密钥确定身份，拒绝客户端自报身份或越权。"""
+        credentials = {'forecaster':settings.api_key,'reviewer':settings.reviewer_key,'admin':settings.admin_key}
+        for role,credential in credentials.items():
+            if secrets.compare_digest(key.encode(),credential.encode()):
+                if role not in roles:
+                    raise HTTPException(403,'Role is not allowed for this operation')
+                return role
+        raise HTTPException(401,'Invalid API key')
 
     def require_row(table,identifier):
         """把实体不存在映射成404。"""
@@ -46,15 +58,15 @@ def create_app(settings=None,repository=None):
         try:
             with repo.connect() as db:
                 db.execute('SELECT COUNT(*) FROM forecasts').fetchone()
-            return {'status':'ok','schema_version':1}
+            return {'status':'ok','schema_version':2}
         except Exception as exc:
             raise HTTPException(503,'Database unavailable') from exc
 
     @app.post('/events',status_code=201)
     def create_event(body:EventCreate,x_api_key:str=Header(default='')):
         """导入CSV并立即质控；ERROR数据也入库存档，禁止预测。"""
-        require_key(x_api_key)
-        return services.import_event(repo,settings,body)
+        actor = require_key(x_api_key,('forecaster','admin'))
+        return services.import_event(repo,settings,body,actor)
 
     @app.get('/events',response_model=list[EventSummary])
     def list_events(limit:int=Query(20,ge=1,le=100),offset:int=Query(0,ge=0),x_api_key:str=Header(default='')):
@@ -73,16 +85,17 @@ def create_app(settings=None,repository=None):
 
     @app.get('/schemes')
     def schemes(x_api_key:str=Header(default='')):
-        """本次只提供一期已冻结的只读方案，写管理尚未实现。"""
+        """返回方案绑定版本、参数摘要和归档状态。"""
         require_key(x_api_key)
-        return [{'id':'phase1-frozen-v1','params':settings.params,'params_sha256':settings.params_hash,
-                 'model_version':model_version(),'readonly':True}]
+        rows = repo.listing('schemes',100,0)
+        return [dict(row,params=json.loads(repo.get('parameter_sets',row['parameter_id'])['params_json']),
+                     params_sha256=repo.get('parameter_sets',row['parameter_id'])['sha256']) for row in rows]
 
     @app.post('/forecasts',status_code=202,response_model=ForecastSummary)
     def create_forecast(body:ForecastCreate,x_api_key:str=Header(default='')):
         """创建QUEUED任务，由独立worker实际执行。"""
-        require_key(x_api_key)
-        return services.queue_forecast(repo,settings,body)
+        actor = require_key(x_api_key,('forecaster','admin'))
+        return services.queue_forecast(repo,settings,body,actor)
 
     @app.get('/forecasts',response_model=list[ForecastSummary])
     def list_forecasts(limit:int=Query(20,ge=1,le=100),offset:int=Query(0,ge=0),x_api_key:str=Header(default='')):
@@ -108,6 +121,8 @@ def create_app(settings=None,repository=None):
         from .charts import forecast_png
         return Response(forecast_png(json.loads(row['snapshot_json']),json.loads(row['result_json'])),media_type='image/png')
 
+    from .governance_api import register_routes
+    register_routes(app,repo,settings,require_key)
     return app
 
 

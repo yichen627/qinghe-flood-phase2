@@ -11,5 +11,15 @@
   "worker_poll_seconds": 1,
   "task_lease_seconds": 120,
   "forecast_acceptance_seconds": 180,
-  "validation_dc_min": 0.85
+  "validation_dc_min": 0.85,
+  "scheduler_poll_seconds": 1,
+  "qc_interval_seconds": 60,
+  "qc_alert_severity": "ERROR",
+  "schedule_min_interval_seconds": 5,
+  "schedule_batch_size": 20,
+  "notification_batch_size": 50,
+  "notification_max_attempts": 3,
+  "notification_retry_seconds": 5,
+  "replay_tolerance_m3s": 0.00000001,
+  "runtime_stale_seconds": 180
 }
