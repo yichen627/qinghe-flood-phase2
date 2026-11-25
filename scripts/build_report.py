@@ -6,6 +6,7 @@ from docx.shared import Cm, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT/'docs'/'evidence'
@@ -15,7 +16,7 @@ def main():
     """按课程必做项组织报告，各小标题统一黑体，无参考文献章节。"""
     runs = json.loads((OUT/'acceptance.json').read_text(encoding='utf-8'))['runs']
     burst = json.loads((OUT/'burst-acceptance.json').read_text(encoding='utf-8'))
-    ci = json.loads((OUT/'final-ci.json').read_text(encoding='utf-8'))
+    ci = json.loads((OUT/'report-ci.json').read_text(encoding='utf-8'))
     doc = Document()
     sec = doc.sections[0]
     sec.page_width, sec.page_height = Cm(21), Cm(29.7)
@@ -67,6 +68,32 @@ def main():
         """添加黑体二级标题。"""
         return doc.add_heading(text,2)
 
+    def link(label,url,center=False,size=10):
+        """插入Word和导出PDF均可点击的真实HTTPS链接。"""
+        para = doc.add_paragraph()
+        if center:
+            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        hyperlink = OxmlElement('w:hyperlink')
+        hyperlink.set(qn('r:id'),para.part.relate_to(url,RT.HYPERLINK,is_external=True))
+        run = OxmlElement('w:r')
+        props = OxmlElement('w:rPr')
+        fonts = OxmlElement('w:rFonts')
+        fonts.set(qn('w:ascii'),'Times New Roman')
+        fonts.set(qn('w:hAnsi'),'Times New Roman')
+        fonts.set(qn('w:eastAsia'),'宋体')
+        props.append(fonts)
+        for tag,value in [('color','2456A6'),('u','single'),('sz',str(size*2))]:
+            node = OxmlElement('w:'+tag)
+            node.set(qn('w:val'),value)
+            props.append(node)
+        run.append(props)
+        text = OxmlElement('w:t')
+        text.text = label
+        run.append(text)
+        hyperlink.append(run)
+        para._p.append(hyperlink)
+        return para
+
     def page(title):
         """新页承载一个完整报告主题。"""
         doc.add_page_break()
@@ -116,6 +143,11 @@ def main():
                  '姓名  陈一','学号  2406050103','完成形式  个人独立完成','日期  2026年11月25日']:
         para = doc.add_paragraph(text)
         para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    para = doc.add_paragraph('代码审阅入口  最终交付分支')
+    para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    para.paragraph_format.space_before = Pt(16)
+    link('https://github.com/yichen627/qinghe-flood-phase2/tree/codex/final-delivery',
+         'https://github.com/yichen627/qinghe-flood-phase2/tree/codex/final-delivery',center=True,size=9)
 
     page('一 项目目标与需求范围')
     p('本项目在一期三水源新安江模型引擎基础上，完成从数据入库、预报计算到产品复核签发的单机业务系统。二期保留一期已验证的模型与冻结参数，将开发重点转向输入质量、服务契约、任务持久化、版本追溯与部署验收。项目由本人以个人形式完成，版本为1.1.0。')
@@ -200,7 +232,7 @@ def main():
     para.add_run().add_picture(str(OUT/'workbench'/'workbench-desktop.png'),width=Cm(16))
     para = doc.add_paragraph('图2 本地预报工作台真实起报后的界面','Caption')
     para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p('页面覆盖数据与质控、产品签发、模型与方案、调度与通知及审计。前端按角色禁用越权操作，后端继续校验角色和状态。课程样本分别载入专属初态；密钥只保存在当前页面内存，刷新后重新连接。')
+    p('页面覆盖数据与质控、产品签发、模型与方案、调度与通知及审计。“查看曲线”直接切换并定位到过程线，“任务详情”独立显示指标、初态和回放操作。前端按角色禁用越权操作，后端继续校验角色和状态。课程样本分别载入专属初态；密钥只保存在当前页面内存，刷新后重新连接。')
     p('真实浏览器通过新任务ID等待计算完成，验证了导入、起报、过程线、预报员签发限制、值班长复核签发发布和治理页面，并检查390像素手机布局无页面横向溢出。自动化截图和业务结果保存于工作台验收证据目录。')
 
     page('八 个人总结与交付说明')
@@ -212,7 +244,39 @@ def main():
     p('本次验收没有把本地测试当成远程CI，也没有把一次低负载测量当成一般性能保证。后续若扩展到多人使用，应补充用户身份体系、数据库迁移策略、外部通知适配、模型多版本部署及更大数据和长时间故障压力验证。')
     h('3 交付清单')
     p('交付包括完整Git仓库、Dockerfile与Compose、锁定依赖、自动化测试和CI、黄金与异常数据、SRS、数据库设计、业务与模型OpenAPI、README、运维手册、演示步骤、最终验收清单、测试证据以及本个人总结报告的Word和PDF版本。工程和文档分别打包，运行数据库及密钥不随包提交。')
-    p('个人信息为河海大学计算机与软件学院软件工程专业24级1班陈一，学号2406050103。本报告按个人实际交付范围组织，不列虚构小组成员。')
+    p('本项目以个人形式完成，作者为河海大学计算机与软件学院软件工程专业24级1班陈一，学号2406050103。提交材料包括可运行代码、设计与运维文档、测试证据和本报告。')
+
+    page('九 工程仓库与运行核验')
+    h('1 GitHub代码审阅地址')
+    p('仓库主页与最终交付分支如下。请优先使用最终交付分支审阅，代码、测试、设计文档和报告均在该分支维护。Git提交历史保留各阶段实现与后续界面修复，便于核对开发过程。')
+    link('仓库主页  https://github.com/yichen627/qinghe-flood-phase2',
+         'https://github.com/yichen627/qinghe-flood-phase2',size=10)
+    link('https://github.com/yichen627/qinghe-flood-phase2/tree/codex/final-delivery',
+         'https://github.com/yichen627/qinghe-flood-phase2/tree/codex/final-delivery',size=9)
+    h('2 持续集成与验收证据')
+    p('业务实现验收提交为'+ci['head_sha']+'。对应远程CI执行结果为success，包含Python测试、真实HTTP计算、服务重启及浏览器业务流程验证。下列运行记录可查看检查步骤和上传的验收产物。')
+    link(ci['html_url'],ci['html_url'],size=9)
+    table(['材料','仓库位置'],[
+        ['需求与架构','docs/SRS.md  docs/DATABASE.md'],
+        ['接口与操作','docs/openapi.json  docs/WORKBENCH.md'],
+        ['测试与运行证据','docs/FINAL_TEST_REPORT.md  docs/evidence/'],
+        ['部署与维护','README.md  docs/OPERATIONS.md'],
+        ['课程数据与回归基线','data/events/  data/golden/'],
+        ['自动化验证','tests/  scripts/browser_smoke.cjs']])
+    h('3 本地启动与教师核验步骤')
+    p('安装Git并启动Docker Desktop的Linux容器环境后，在终端克隆最终交付分支并启动。首次构建需要联网下载镜像与依赖。')
+    for command in [
+        'git clone https://github.com/yichen627/qinghe-flood-phase2.git',
+        'cd qinghe-flood-phase2',
+        'git switch codex/final-delivery',
+        'docker compose up -d --build --wait api worker']:
+        para = doc.add_paragraph(command)
+        para.paragraph_format.space_after = Pt(2)
+        para.paragraph_format.line_spacing = 1.05
+        for run in para.runs:
+            run.font.name = 'Consolas'
+            run.font.size = Pt(9)
+    p('启动后在本机浏览器打开http://localhost:8000/，选择预报员演示身份并连接，导入课程样本，提交预报并查看曲线；切换值班长后可复核签发产品。本机地址只在已启动系统的计算机上有效，GitHub用于查看代码与文档，不提供在线预报服务。')
     target = ROOT/'reports'
     target.mkdir(exist_ok=True)
     filename = target/'陈一_2406050103_洪水预报系统二期总结报告.docx'
