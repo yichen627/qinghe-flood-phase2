@@ -1,0 +1,64 @@
+{
+  "started_at": "2026-11-25T05:33:22.264161+00:00",
+  "preserved_stage2_task_ids": [
+    "1330d8fa9aa04d3e899a40629b7692ae",
+    "d7523fce782a49a4bae5c062c26e20e1",
+    "efcb5bfe255d49faaa078ea169c2291c",
+    "ef6b7c06933b4023980f9a66103adda9"
+  ],
+  "new_forecast": {
+    "id": "7c79d5488fe448429c15c2b4fcfaea7c",
+    "scheme_id": "a0861c15cffe42db9a9ebfdbfda9a9ee",
+    "seconds": 0.5107289789998504
+  },
+  "replay": {
+    "max_abs_q_difference": 0.0,
+    "original_task_id": "7c79d5488fe448429c15c2b4fcfaea7c",
+    "within_tolerance": true
+  },
+  "product": {
+    "id": "def9b6eea0f24f559945650357fe03e3",
+    "public_status": "PUBLISHED",
+    "inbox_id": "8ca4bdfd26ff4cfbb1b04756266573f3"
+  },
+  "schedule": {
+    "id": "d92d26a9c9424a51832d7722074c1f90",
+    "forecast_id": "4aa647cf3ee34917a336186c81e47978",
+    "trigger_seconds": 1.0085944490001566
+  },
+  "automatic_qc": {
+    "event_id": "2aa512e1bd0e4941b1b9e1d2440cfd56",
+    "alert_id": "0ffdddf40a774625a5f64a8f49565d74",
+    "inbox_id": "07afec9bca5243b3966d60e025108b02",
+    "seconds": 43.43510480099985,
+    "manual_scan_called": false
+  },
+  "runtime": {
+    "scheduler": {
+      "id": "scheduler",
+      "created_at": "2026-11-25T05:34:11.109850+00:00",
+      "detail": {
+        "notification_count": 1,
+        "quality_scan_id": "88f12deadc384a0dbddee7cd88ea1316",
+        "scheduled_count": 0,
+        "status": "ok"
+      },
+      "stale": false
+    },
+    "worker": {
+      "id": "worker",
+      "created_at": "2026-11-25T05:34:10.969597+00:00",
+      "detail": {
+        "status": "ok",
+        "worked": false
+      },
+      "stale": false
+    }
+  },
+  "product_audit_actions": [
+    "product.publish",
+    "product.sign",
+    "product.review",
+    "product.drafted"
+  ]
+}

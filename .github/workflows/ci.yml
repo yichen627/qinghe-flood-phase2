@@ -1,4 +1,4 @@
-name: stage-2-quality
+name: stages-1-4-quality
 on: [push, pull_request]
 jobs:
   tests:
@@ -15,11 +15,12 @@ jobs:
         run: |
           docker compose up -d --build --wait api worker
           docker compose exec -T api python scripts/demo.py
+          docker compose exec -T api python scripts/demo_workflows.py
           docker compose cp api:/app/artifacts ./docker-artifacts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: stage2-test-evidence
+          name: stages-1-4-test-evidence
           path: |
             artifacts/
             docker-artifacts/
